@@ -85,9 +85,11 @@ export default function App() {
   const handleWaveCleared = useCallback(() => {
     setGameState(prev => ({ ...prev, wave: prev.wave + 1 }));
     setTowers([]); // Reset towers every wave
+    soundManager.playWaveStart();
   }, []);
 
   const toggleGameSpeed = () => {
+    soundManager.playClick();
     setGameState(prev => ({
       ...prev,
       gameSpeed: prev.gameSpeed === 1 ? 2 : prev.gameSpeed === 2 ? 4 : 1
@@ -110,6 +112,7 @@ export default function App() {
         });
       } else {
         // Penalty for incorrect answer: -100 coins, min 0
+        soundManager.playFailure();
         setGameState(prev => ({
           ...prev,
           coins: Math.max(0, prev.coins - 100)
@@ -125,6 +128,7 @@ export default function App() {
 
     if (correct && pendingAction) {
       // Reward for correct answer
+      soundManager.playSuccess();
       setGameState(prev => ({
         ...prev,
         coins: prev.coins + 30,
@@ -148,12 +152,14 @@ export default function App() {
         };
         setTowers(prev => [...prev, newTower]);
         setGameState(prev => ({ ...prev, coins: prev.coins - cost }));
+        soundManager.playPlacement();
       } else if (pendingAction.type === 'upgrade' && pendingAction.towerId) {
         setTowers(prev => prev.map(t => {
           if (t.id === pendingAction.towerId) {
             const nextLevel = t.level + 1;
             const upgradeCost = t.upgradeCost;
             setGameState(gs => ({ ...gs, coins: gs.coins - upgradeCost }));
+            soundManager.playUpgrade();
             return {
               ...t,
               level: nextLevel,
@@ -172,6 +178,7 @@ export default function App() {
   };
 
   const handleBuyTower = (type: Tower['type']) => {
+    soundManager.playClick();
     if (selectedTowerType === type) {
       setSelectedTowerType(null);
     } else {
@@ -252,6 +259,7 @@ export default function App() {
   };
 
   const resetGame = (fromBeginning: boolean = true) => {
+    soundManager.playClick();
     if (fromBeginning) {
       setGameState({
         coins: 100,
@@ -280,6 +288,7 @@ export default function App() {
   };
 
   const toggleMute = () => {
+    soundManager.playClick();
     const newMuted = soundManager.toggleMute();
     setIsMuted(newMuted);
   };
@@ -331,14 +340,20 @@ export default function App() {
               {isMuted ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />}
             </button>
             <button 
-              onClick={() => setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }))}
+              onClick={() => {
+                soundManager.playClick();
+                setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }));
+              }}
               className="p-2 sm:p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors"
               title={gameState.isPaused ? "게임 재개" : "게임 일시정지"}
             >
               {gameState.isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
             <button 
-              onClick={() => setIsHelpOpen(true)}
+              onClick={() => {
+                soundManager.playClick();
+                setIsHelpOpen(true);
+              }}
               className="p-2 sm:p-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl border border-emerald-400/30 transition-colors shadow-lg shadow-emerald-600/20"
               title="도움말"
             >

@@ -407,15 +407,31 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Draw Background
+    // Draw Background - Enhanced for high-quality vector anime look
     const bgGradient = ctx.createRadialGradient(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, CANVAS_WIDTH);
     bgGradient.addColorStop(0, '#0f172a');
-    bgGradient.addColorStop(1, '#020617');
+    bgGradient.addColorStop(0.5, '#020617');
+    bgGradient.addColorStop(1, '#000000');
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Draw Grid (Subtle)
-    ctx.strokeStyle = 'rgba(30, 41, 59, 0.5)';
+    // Magical Floating Particles in Background
+    const time = currentTime / 1000;
+    for (let i = 0; i < 30; i++) {
+      const px = (Math.sin(i * 123.45) * 0.5 + 0.5) * CANVAS_WIDTH;
+      const py = (Math.cos(i * 543.21) * 0.5 + 0.5) * CANVAS_HEIGHT + Math.sin(time * 0.5 + i) * 20;
+      const size = (Math.sin(time + i) * 0.5 + 0.5) * 2 + 1;
+      const alpha = (Math.sin(time * 0.8 + i) * 0.5 + 0.5) * 0.3;
+      
+      ctx.fillStyle = `rgba(110, 231, 183, ${alpha})`;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#34d399';
+      ctx.beginPath(); ctx.arc(px, py, size, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // Draw Grid (Subtle & Stylish)
+    ctx.strokeStyle = 'rgba(30, 41, 59, 0.3)';
     ctx.lineWidth = 1;
     for (let x = 0; x < CANVAS_WIDTH; x += GRID_SIZE) {
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, CANVAS_HEIGHT); ctx.stroke();
@@ -424,11 +440,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CANVAS_WIDTH, y); ctx.stroke();
     }
 
-    // Draw Path
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = 'rgba(139, 69, 19, 0.3)';
-    ctx.strokeStyle = '#2d1b0d';
-    ctx.lineWidth = GRID_SIZE + 4;
+    // Draw Path - Enhanced with glowing moss and energy runes
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = 'rgba(16, 185, 129, 0.2)';
+    ctx.strokeStyle = '#1a0f0f';
+    ctx.lineWidth = GRID_SIZE + 8;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
@@ -438,17 +454,43 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     });
     ctx.stroke();
 
-    ctx.strokeStyle = '#4a2c16';
-    ctx.lineWidth = GRID_SIZE;
+    // Main Path Color
+    ctx.strokeStyle = '#2d1b0d';
+    ctx.lineWidth = GRID_SIZE + 2;
     ctx.stroke();
-    ctx.shadowBlur = 0;
 
-    // Draw World Tree (Base)
+    // Glowing Moss/Runes along the path
+    ctx.strokeStyle = '#065f46';
+    ctx.lineWidth = GRID_SIZE - 4;
+    ctx.stroke();
+
+    ctx.strokeStyle = `rgba(52, 211, 153, ${0.1 + Math.sin(time * 2) * 0.05})`;
+    ctx.lineWidth = GRID_SIZE - 10;
+    ctx.stroke();
+
+    // Detailed Path Texture (Anime style)
+    ctx.shadowBlur = 0;
+    currentPath.forEach((p, i) => {
+      if (i < currentPath.length - 1) {
+        const nextP = currentPath[i+1];
+        const midX = (p.x + nextP.x) / 2;
+        const midY = (p.y + nextP.y) / 2;
+        
+        // Small glowing stones
+        if (i % 2 === 0) {
+          ctx.fillStyle = 'rgba(110, 231, 183, 0.2)';
+          ctx.beginPath(); ctx.arc(midX + Math.sin(i) * 10, midY + Math.cos(i) * 10, 3, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    });
+
+    // Draw World Tree (Base) - Enhanced for high-quality vector anime look
     const drawWorldTree = (x: number, y: number) => {
       ctx.save();
       
       const time = currentTime / 1000;
       const pulse = Math.sin(time * 2) * 0.1 + 1;
+      const rotateAnim = time * 0.5;
       
       // Apply shake effect
       if (baseHitEffect > 0) {
@@ -459,131 +501,219 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.translate(x, y);
       }
       
-      // Ambient Glow - More intense
-      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 100);
-      glow.addColorStop(0, baseHitEffect > 5 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(16, 185, 129, 0.4)');
-      glow.addColorStop(0.6, 'rgba(16, 185, 129, 0.1)');
-      glow.addColorStop(1, 'rgba(16, 185, 129, 0)');
-      ctx.fillStyle = glow;
-      ctx.beginPath(); ctx.arc(0, 0, 100, 0, Math.PI * 2); ctx.fill();
-
-      // Roots (Detailed & Shaded)
-      ctx.strokeStyle = '#3d2b1f';
-      ctx.lineWidth = 6;
-      for(let i=0; i<8; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, 20);
-        const angle = (Math.PI / 4) * i + Math.sin(time * 0.5) * 0.1;
-        ctx.quadraticCurveTo(Math.cos(angle) * 40, 50, Math.cos(angle) * 70, 55);
-        ctx.stroke();
-        // Root texture
-        ctx.strokeStyle = '#2d1f1f';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, 20);
-        ctx.quadraticCurveTo(Math.cos(angle) * 35, 45, Math.cos(angle) * 65, 50);
-        ctx.stroke();
-        ctx.strokeStyle = '#3d2b1f';
-        ctx.lineWidth = 6;
+      // 1. Massive Magical Aura - Multi-layered
+      const auraCount = 3;
+      for (let i = 0; i < auraCount; i++) {
+        const auraSize = 120 + i * 40 + Math.sin(time * (1 + i)) * 10;
+        const auraGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, auraSize);
+        const alpha = (0.3 / (i + 1)) * (0.7 + Math.sin(time * 2) * 0.3);
+        auraGlow.addColorStop(0, baseHitEffect > 5 ? `rgba(239, 68, 68, ${alpha})` : `rgba(52, 211, 153, ${alpha})`);
+        auraGlow.addColorStop(1, 'rgba(16, 185, 129, 0)');
+        ctx.fillStyle = auraGlow;
+        ctx.beginPath(); ctx.arc(0, 0, auraSize, 0, Math.PI * 2); ctx.fill();
       }
 
-      // Trunk (Detailed Shading & Runes)
-      const trunkGrad = ctx.createLinearGradient(-20, 0, 20, 0);
-      trunkGrad.addColorStop(0, '#2d1f1f');
-      trunkGrad.addColorStop(0.5, '#5d3a1a');
-      trunkGrad.addColorStop(1, '#2d1f1f');
-      ctx.fillStyle = baseHitEffect > 5 ? '#ef4444' : trunkGrad;
-      
-      ctx.beginPath();
-      ctx.moveTo(-20, 50);
-      ctx.quadraticCurveTo(-10, 10, -25, -40);
-      ctx.lineTo(25, -40);
-      ctx.quadraticCurveTo(10, 10, 20, 50);
-      ctx.fill();
+      // 2. Roots (Detailed, Shaded, and Organic)
+      ctx.strokeStyle = '#2d1f1f';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      for(let i=0; i<10; i++) {
+        ctx.save();
+        const angle = (Math.PI * 2 / 10) * i + Math.sin(time * 0.3) * 0.1;
+        ctx.rotate(angle);
+        
+        // Main root
+        ctx.beginPath();
+        ctx.moveTo(0, 20);
+        ctx.quadraticCurveTo(30, 40, 60, 45);
+        ctx.stroke();
+        
+        // Root highlight
+        ctx.strokeStyle = '#5d3a1a';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(2, 18);
+        ctx.quadraticCurveTo(32, 38, 58, 43);
+        ctx.stroke();
+        
+        // Small root branch
+        ctx.strokeStyle = '#2d1f1f';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(30, 40);
+        ctx.quadraticCurveTo(45, 60, 55, 65);
+        ctx.stroke();
+        
+        ctx.restore();
+      }
 
-      // Glowing Runes - More complex
+      // 3. Trunk (Detailed Shading, Glossy Highlights & Glowing Runes)
+      const trunkGrad = ctx.createLinearGradient(-30, 0, 30, 0);
+      trunkGrad.addColorStop(0, '#1a0f0f');
+      trunkGrad.addColorStop(0.3, '#3d2b1f');
+      trunkGrad.addColorStop(0.5, '#78350f');
+      trunkGrad.addColorStop(0.7, '#3d2b1f');
+      trunkGrad.addColorStop(1, '#1a0f0f');
+      
+      ctx.fillStyle = baseHitEffect > 5 ? '#ef4444' : trunkGrad;
+      ctx.beginPath();
+      ctx.moveTo(-25, 55);
+      ctx.bezierCurveTo(-15, 20, -35, -20, -30, -50);
+      ctx.lineTo(30, -50);
+      ctx.bezierCurveTo(35, -20, 15, 20, 25, 55);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Trunk Glossy Highlight
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(-15, 40);
+      ctx.bezierCurveTo(-5, 10, -20, -20, -18, -45);
+      ctx.stroke();
+
+      // Glowing Runes - Intricate & Flashy
       if (baseHitEffect <= 5) {
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#34d399';
-        ctx.strokeStyle = `rgba(52, 211, 153, ${0.4 + Math.sin(time * 4) * 0.3})`;
-        ctx.lineWidth = 2;
-        for(let i=0; i<3; i++) {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#6ee7b7';
+        ctx.strokeStyle = `rgba(110, 231, 183, ${0.6 + Math.sin(time * 5) * 0.4})`;
+        ctx.lineWidth = 3;
+        for(let i=0; i<4; i++) {
+          const ry = 30 - i * 28;
           ctx.beginPath();
-          ctx.moveTo(-8, 30 - i * 25);
-          ctx.lineTo(8, 20 - i * 25);
-          ctx.lineTo(-8, 10 - i * 25);
+          ctx.moveTo(-10, ry);
+          ctx.lineTo(0, ry - 10);
+          ctx.lineTo(10, ry);
+          ctx.moveTo(0, ry - 10);
+          ctx.lineTo(0, ry + 5);
           ctx.stroke();
         }
         ctx.shadowBlur = 0;
       }
 
-      // Foliage Layers (Rich & Animated)
+      // 4. Foliage Layers (Lush, Multi-toned, and Animated)
       const drawFoliageLayer = (r: number, color: string, ox: number, oy: number, phase: number) => {
-        const scale = 1 + Math.sin(time * 1.5 + phase) * 0.05;
-        const grad = ctx.createRadialGradient(ox, oy, 0, ox, oy, r);
+        const scale = 1 + Math.sin(time * 1.2 + phase) * 0.06;
+        const grad = ctx.createRadialGradient(ox - r*0.3, oy - r*0.3, 0, ox, oy, r);
         grad.addColorStop(0, color);
-        grad.addColorStop(0.8, color);
+        grad.addColorStop(0.7, color);
         grad.addColorStop(1, '#064e3b');
         
-        ctx.fillStyle = baseHitEffect > 5 ? '#ef4444' : grad;
+        ctx.fillStyle = baseHitEffect > 5 ? '#f87171' : grad;
         ctx.beginPath();
         ctx.arc(ox, oy, r * scale, 0, Math.PI * 2);
         ctx.fill();
         
-        // Leaf Highlights
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-        for(let i=0; i<5; i++) {
-          const la = (Math.PI * 2 / 5) * i + time * 0.3;
+        // Leaf Highlights (Vector style)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        for(let i=0; i<6; i++) {
+          const la = (Math.PI * 2 / 6) * i + time * 0.4;
+          const lx = ox + Math.cos(la) * r * 0.6;
+          const ly = oy + Math.sin(la) * r * 0.6;
           ctx.beginPath();
-          ctx.ellipse(ox + Math.cos(la) * r * 0.5, oy + Math.sin(la) * r * 0.5, r * 0.2, r * 0.1, la, 0, Math.PI * 2);
+          ctx.ellipse(lx, ly, r * 0.25, r * 0.12, la, 0, Math.PI * 2);
           ctx.fill();
         }
+        
+        // Inner Glow
+        const innerGlow = ctx.createRadialGradient(ox, oy, r * 0.5, ox, oy, r);
+        innerGlow.addColorStop(0, 'transparent');
+        innerGlow.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+        ctx.fillStyle = innerGlow;
+        ctx.beginPath(); ctx.arc(ox, oy, r * scale, 0, Math.PI * 2); ctx.fill();
       };
 
-      drawFoliageLayer(55, '#065f46', 0, -60, 0);
-      drawFoliageLayer(50, '#059669', -40, -40, 1);
-      drawFoliageLayer(50, '#059669', 40, -40, 2);
-      drawFoliageLayer(45, '#10b981', 0, -90, 3);
+      drawFoliageLayer(70, '#065f46', 0, -70, 0);
+      drawFoliageLayer(60, '#059669', -50, -50, 1.5);
+      drawFoliageLayer(60, '#059669', 50, -50, 3);
+      drawFoliageLayer(55, '#10b981', 0, -110, 4.5);
       
-      // Floating Magic Particles
-      for(let i=0; i<10; i++) {
-        const pTime = time * 0.4 + i * (Math.PI * 2 / 10);
-        const px = Math.sin(pTime) * (80 + Math.sin(time) * 15);
-        const py = -60 + Math.cos(pTime * 1.5) * 60;
-        ctx.fillStyle = `rgba(52, 211, 153, ${0.5 + Math.sin(time + i) * 0.4})`;
-        ctx.shadowBlur = 8;
+      // 5. Floating Magic Particles (Enhanced)
+      for(let i=0; i<15; i++) {
+        const pTime = time * 0.3 + i * (Math.PI * 2 / 15);
+        const dist = 100 + Math.sin(time * 0.8 + i) * 20;
+        const px = Math.sin(pTime) * dist;
+        const py = -70 + Math.cos(pTime * 1.2) * 80;
+        
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + Math.sin(time * 2 + i) * 0.4})`;
+        ctx.shadowBlur = 10;
         ctx.shadowColor = '#34d399';
-        ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); 
+        // Star shape
+        for(let j=0; j<4; j++) {
+          const sa = (Math.PI / 2) * j;
+          ctx.lineTo(px + Math.cos(sa) * 4, py + Math.sin(sa) * 4);
+          ctx.lineTo(px + Math.cos(sa + Math.PI/4) * 1.5, py + Math.sin(sa + Math.PI/4) * 1.5);
+        }
+        ctx.fill();
         ctx.shadowBlur = 0;
       }
 
-      // Magic Core (Pulsing & Energy Rings)
-      const coreY = -30;
-      ctx.shadowBlur = 30 * pulse;
-      ctx.shadowColor = baseHitEffect > 5 ? '#ef4444' : '#34d399';
-      ctx.fillStyle = baseHitEffect > 5 ? '#fca5a5' : '#ecfdf5';
-      ctx.beginPath(); ctx.arc(0, coreY, 12 * pulse, 0, Math.PI * 2); ctx.fill();
+      // 6. Magic Core (Intense Pulsing & Flashy Energy Rings)
+      const coreY = -40;
+      const coreSize = 18 * pulse;
+      
+      // Core Glow
+      const coreGlow = ctx.createRadialGradient(0, coreY, 0, 0, coreY, coreSize * 5);
+      coreGlow.addColorStop(0, baseHitEffect > 5 ? 'rgba(254, 202, 202, 0.9)' : 'rgba(209, 250, 229, 0.9)');
+      coreGlow.addColorStop(0.4, baseHitEffect > 5 ? 'rgba(239, 68, 68, 0.4)' : 'rgba(52, 211, 153, 0.4)');
+      coreGlow.addColorStop(1, 'rgba(16, 185, 129, 0)');
+      ctx.fillStyle = coreGlow;
+      ctx.beginPath(); ctx.arc(0, coreY, coreSize * 5, 0, Math.PI * 2); ctx.fill();
+
+      // Core Center - Flashy Anime Star
+      ctx.shadowBlur = 50 * pulse;
+      ctx.shadowColor = baseHitEffect > 5 ? '#ef4444' : '#6ee7b7';
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); 
+      for(let i=0; i<8; i++) {
+        const sa = (Math.PI / 4) * i + time * 2;
+        const sr = i % 2 === 0 ? coreSize * 1.5 : coreSize * 0.6;
+        ctx.lineTo(Math.cos(sa) * sr, coreY + Math.sin(sa) * sr);
+      }
+      ctx.closePath();
+      ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Rotating Energy Rings
-      ctx.lineWidth = 2;
-      for(let i=0; i<2; i++) {
+      // Rotating Energy Rings (Flashy Vector Style)
+      for(let i=0; i<3; i++) {
         ctx.save();
         ctx.translate(0, coreY);
-        ctx.rotate(time * (i === 0 ? 1.2 : -0.8));
-        ctx.scale(1, 0.4);
-        ctx.strokeStyle = i === 0 ? 'rgba(52, 211, 153, 0.6)' : 'rgba(16, 185, 129, 0.4)';
-        ctx.beginPath(); ctx.arc(0, 0, 30 + i * 15, 0, Math.PI * 2); ctx.stroke();
-        // Energy nodes
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(30 + i * 15, 0, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.rotate(time * (1 + i * 0.5) * (i % 2 === 0 ? 1 : -1));
+        ctx.scale(1, 0.35);
+        
+        ctx.lineWidth = 4 - i * 0.5;
+        ctx.strokeStyle = i === 0 ? 'rgba(110, 231, 183, 0.9)' : i === 1 ? 'rgba(52, 211, 153, 0.7)' : 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath(); 
+        ctx.arc(0, 0, 45 + i * 25, 0, Math.PI * 2); 
+        ctx.stroke();
+        
+        // Energy Orbs on Rings - Glowing
+        const nodeCount = 4 + i;
+        for(let k=0; k<nodeCount; k++) {
+          const na = (Math.PI * 2 / nodeCount) * k;
+          const nx = Math.cos(na) * (45 + i * 25);
+          const ny = Math.sin(na) * (45 + i * 25);
+          
+          ctx.fillStyle = '#fff';
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#fff';
+          ctx.beginPath(); ctx.arc(nx, ny, 5, 0, Math.PI * 2); ctx.fill();
+          
+          // Energy Sparkles
+          if (Math.random() > 0.8) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath(); ctx.arc(nx + (Math.random()-0.5)*10, ny + (Math.random()-0.5)*10, 2, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.shadowBlur = 0;
+        }
         ctx.restore();
       }
 
       // Damage Flash Overlay
       if (baseHitEffect > 0) {
-        ctx.fillStyle = `rgba(239, 68, 68, ${baseHitEffect / 30})`;
-        ctx.beginPath(); ctx.arc(0, coreY, 130, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = `rgba(239, 68, 68, ${baseHitEffect / 25})`;
+        ctx.beginPath(); ctx.arc(0, coreY, 150, 0, Math.PI * 2); ctx.fill();
       }
 
       ctx.restore();
@@ -883,6 +1013,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       let eyeColor = '#ef4444';
       let size = 12;
 
+      // Shadow under enemy
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.beginPath(); ctx.ellipse(0, 15, 20, 8, 0, 0, Math.PI * 2); ctx.fill();
+
       // Cartoon Eye Helper
       const drawCartoonEyes = (ex: number, ey: number, s: number) => {
         ctx.shadowBlur = 10;
@@ -910,24 +1044,35 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           bodyColor = '#38bdf8';
           accentColor = '#0ea5e9';
           
+          // Speed Trail (Flashy)
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+          ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(-15, -5); ctx.lineTo(-35, -5); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-15, 5); ctx.lineTo(-35, 5); ctx.stroke();
+          
           // Wings (Animated) - Iridescent effect
           for(let i=0; i<4; i++) {
             ctx.save();
             ctx.rotate((Math.PI/2) * i + wingAnim * (i < 2 ? 1 : -1));
             const wingGrad = ctx.createLinearGradient(0, 0, 20, 0);
-            wingGrad.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
-            wingGrad.addColorStop(1, 'rgba(56, 189, 248, 0.2)');
+            wingGrad.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+            wingGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.4)');
+            wingGrad.addColorStop(1, 'rgba(56, 189, 248, 0.1)');
             ctx.fillStyle = wingGrad;
-            ctx.beginPath(); ctx.ellipse(18, 0, 15, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(18, 0, 16, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.restore();
           }
           // Body - Segments
-          ctx.fillStyle = bodyColor;
+          const bodyGrad = ctx.createLinearGradient(-14, 0, 14, 0);
+          bodyGrad.addColorStop(0, accentColor);
+          bodyGrad.addColorStop(0.5, bodyColor);
+          bodyGrad.addColorStop(1, accentColor);
+          ctx.fillStyle = bodyGrad;
           ctx.beginPath(); ctx.ellipse(0, 0, 14, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
           // Tail with stripes
           ctx.fillStyle = accentColor;
           ctx.beginPath(); ctx.roundRect(-22, -2.5, 12, 5, 2.5); ctx.fill(); ctx.stroke();
-          drawCartoonEyes(10, 0, 4);
+          drawCartoonEyes(10, 0, 4.5);
         } 
         else if (e.type === 'tank' || e.type === 'titan') {
           // Beetle Style - Heavy & Cartoonish
@@ -935,37 +1080,54 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           bodyColor = e.type === 'titan' ? '#1e293b' : '#334155';
           accentColor = '#475569';
           
-          // Legs - Chunky
+          // Exhaust Pipes (Flashy)
+          ctx.fillStyle = '#1e293b';
+          ctx.beginPath(); ctx.roundRect(-size-5, -10, 10, 5, 2); ctx.fill();
+          ctx.beginPath(); ctx.roundRect(-size-5, 5, 10, 5, 2); ctx.fill();
+          // Exhaust Glow
+          ctx.fillStyle = `rgba(239, 68, 68, ${0.4 + Math.sin(time*10)*0.3})`;
+          ctx.beginPath(); ctx.arc(-size-6, -7.5, 3, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(-size-6, 7.5, 3, 0, Math.PI*2); ctx.fill();
+
+          // Legs - Chunky Mechanical
           ctx.strokeStyle = bodyColor;
-          ctx.lineWidth = 4;
+          ctx.lineWidth = 5;
           for(let i=0; i<6; i++) {
             ctx.save();
             const angle = (Math.PI / 3) * i + moveAnim * 0.15;
             ctx.rotate(angle);
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(size + 8, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(size + 10, 0); ctx.stroke();
+            // Joint
+            ctx.fillStyle = accentColor;
+            ctx.beginPath(); ctx.arc(size + 5, 0, 3, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
           }
-          // Shell - Glossy
-          const shellGrad = ctx.createRadialGradient(-size/2, -size/2, 0, 0, 0, size);
-          shellGrad.addColorStop(0, '#64748b');
+          // Shell - Glossy & Detailed
+          const shellGrad = ctx.createRadialGradient(-size/3, -size/3, 0, 0, 0, size);
+          shellGrad.addColorStop(0, '#94a3b8');
+          shellGrad.addColorStop(0.5, '#475569');
           shellGrad.addColorStop(1, bodyColor);
           ctx.fillStyle = shellGrad;
           ctx.beginPath(); ctx.arc(0, 0, size, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          // Shell Split
+          // Shell Split & Rivets
           ctx.lineWidth = 2;
           ctx.beginPath(); ctx.moveTo(0, -size); ctx.lineTo(0, size); ctx.stroke();
+          ctx.fillStyle = '#1e293b';
+          for(let i=0; i<4; i++) {
+            ctx.beginPath(); ctx.arc(0, -size + 10 + i*(size/2), 2, 0, Math.PI*2); ctx.fill();
+          }
           // Horns - Big & Bold
           ctx.fillStyle = bodyColor;
           ctx.beginPath();
-          ctx.moveTo(size-5, -8); ctx.quadraticCurveTo(size+20, -15, size+15, -25);
-          ctx.lineTo(size+10, -20); ctx.quadraticCurveTo(size+15, -10, size-5, -5);
+          ctx.moveTo(size-5, -8); ctx.quadraticCurveTo(size+25, -15, size+20, -30);
+          ctx.lineTo(size+12, -22); ctx.quadraticCurveTo(size+18, -12, size-5, -5);
           ctx.fill(); ctx.stroke();
           ctx.beginPath();
-          ctx.moveTo(size-5, 8); ctx.quadraticCurveTo(size+20, 15, size+15, 25);
-          ctx.lineTo(size+10, 20); ctx.quadraticCurveTo(size+15, 10, size-5, 5);
+          ctx.moveTo(size-5, 8); ctx.quadraticCurveTo(size+25, 15, size+20, 30);
+          ctx.lineTo(size+12, 22); ctx.quadraticCurveTo(size+18, 10, size-5, 5);
           ctx.fill(); ctx.stroke();
           
-          drawCartoonEyes(size-8, 0, size/5);
+          drawCartoonEyes(size-8, 0, size/4.5);
         }
         else if (e.type === 'shield') {
           // Ladybug/Shield Beetle Style
@@ -973,65 +1135,87 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           bodyColor = '#475569';
           eyeColor = '#38bdf8';
           
-          // Shield Aura - Pulsing Hexagons
+          // Shield Aura - Pulsing Hexagons (Flashy)
           ctx.save();
-          ctx.rotate(time);
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          for(let i=0; i<6; i++) {
-            const a = (Math.PI / 3) * i;
-            const r = size + 12 + Math.sin(time*4)*3;
-            ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r);
+          ctx.rotate(time * 0.5);
+          ctx.strokeStyle = `rgba(56, 189, 248, ${0.4 + Math.sin(time*5)*0.2})`;
+          ctx.lineWidth = 3;
+          for(let j=0; j<2; j++) {
+            ctx.beginPath();
+            const rBase = size + 14 + j*8 + Math.sin(time*4)*3;
+            for(let i=0; i<6; i++) {
+              const a = (Math.PI / 3) * i;
+              ctx.lineTo(Math.cos(a)*rBase, Math.sin(a)*rBase);
+            }
+            ctx.closePath(); ctx.stroke();
           }
-          ctx.closePath(); ctx.stroke();
           ctx.restore();
           
-          // Body - Round & Cute
-          ctx.fillStyle = bodyColor;
+          // Body - Round & Cute Mechanical
+          const bodyGrad = ctx.createRadialGradient(-5, -5, 0, 0, 0, size);
+          bodyGrad.addColorStop(0, '#94a3b8');
+          bodyGrad.addColorStop(1, bodyColor);
+          ctx.fillStyle = bodyGrad;
           ctx.beginPath(); ctx.arc(0, 0, size, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          // Pattern
-          ctx.fillStyle = '#1e293b';
+          // Pattern - Glowing Dots
           for(let i=0; i<3; i++) {
             const a = (Math.PI * 2 / 3) * i + time;
-            ctx.beginPath(); ctx.arc(Math.cos(a)*10, Math.sin(a)*10, 4, 0, Math.PI * 2); ctx.fill();
+            const px = Math.cos(a)*10;
+            const py = Math.sin(a)*10;
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(56, 189, 248, ${0.5 + Math.sin(time*8)*0.5})`;
+            ctx.beginPath(); ctx.arc(px, py, 2, 0, Math.PI * 2); ctx.fill();
           }
-          drawCartoonEyes(size-6, 0, 5);
+          drawCartoonEyes(size-6, 0, 5.5);
         }
         else if (e.type === 'jammer' || e.type === 'sprayer') {
-          // Wasp/Bee Style - Vibrant
+          // Wasp/Bee Style - Vibrant & Flashy
           size = 16;
           bodyColor = e.type === 'jammer' ? '#7c3aed' : '#059669';
           accentColor = '#fde047';
           
-          // Wings (Fast Animation)
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-          ctx.save(); ctx.rotate(wingAnim * 2.5);
-          ctx.beginPath(); ctx.ellipse(0, -12, 18, 7, Math.PI/4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          ctx.beginPath(); ctx.ellipse(0, -12, 18, 7, -Math.PI/4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // Wings (Fast Animation & Blur)
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.save(); ctx.rotate(wingAnim * 3);
+          ctx.beginPath(); ctx.ellipse(0, -14, 20, 8, Math.PI/4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.ellipse(0, -14, 20, 8, -Math.PI/4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
           ctx.restore();
 
-          // Body Segments - Striped
-          ctx.fillStyle = bodyColor;
-          ctx.beginPath(); ctx.ellipse(-10, 0, 10, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          ctx.fillStyle = accentColor;
-          ctx.beginPath(); ctx.ellipse(4, 0, 12, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          // Stripes
-          ctx.strokeStyle = '#000';
-          ctx.lineWidth = 3;
-          ctx.beginPath(); ctx.moveTo(4, -10); ctx.lineTo(4, 10); ctx.stroke();
-          // Stinger
-          ctx.fillStyle = '#000';
-          ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(-28, 0); ctx.lineTo(-20, 4); ctx.fill();
+          // Body Segments - Striped & Glossy
+          const tailGrad = ctx.createRadialGradient(-10, 0, 0, -10, 0, 10);
+          tailGrad.addColorStop(0, '#a78bfa');
+          tailGrad.addColorStop(1, bodyColor);
+          ctx.fillStyle = tailGrad;
+          ctx.beginPath(); ctx.ellipse(-10, 0, 12, 9, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
           
-          drawCartoonEyes(12, 0, 5);
+          const headGrad = ctx.createRadialGradient(4, 0, 0, 4, 0, 12);
+          headGrad.addColorStop(0, '#fef08a');
+          headGrad.addColorStop(1, accentColor);
+          ctx.fillStyle = headGrad;
+          ctx.beginPath(); ctx.ellipse(4, 0, 14, 11, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          
+          // Stripes - Mechanical
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(4, -11); ctx.lineTo(4, 11); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-2, -10); ctx.lineTo(-2, 10); ctx.stroke();
+          
+          // Stinger - Glowing
+          ctx.fillStyle = '#000';
+          ctx.beginPath(); ctx.moveTo(-22, 0); ctx.lineTo(-32, 0); ctx.lineTo(-22, 5); ctx.fill();
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath(); ctx.arc(-24, 0, 2, 0, Math.PI*2); ctx.fill();
+          
+          drawCartoonEyes(14, 0, 5.5);
         }
         else {
-          // Basic Ant Style - Cute
+          // Basic Ant Style - Cute & Mechanical
           size = 14;
           bodyColor = '#64748b';
+          accentColor = '#94a3b8';
           
-          // Legs
+          // Legs - Mechanical joints
           ctx.strokeStyle = bodyColor;
           ctx.lineWidth = 3;
           for(let i=0; i<6; i++) {
@@ -1040,16 +1224,37 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             const legAnim = Math.sin(time * 18 + phase) * 6;
             ctx.beginPath();
             ctx.moveTo(0, 0);
-            ctx.lineTo(side * 18, -8 + (i%3)*8 + legAnim);
+            ctx.lineTo(side * 12, -4 + (i%3)*4);
+            ctx.lineTo(side * 20, -8 + (i%3)*8 + legAnim);
             ctx.stroke();
+            
+            // Joint
+            ctx.fillStyle = accentColor;
+            ctx.beginPath(); ctx.arc(side * 12, -4 + (i%3)*4, 2, 0, Math.PI * 2); ctx.fill();
           }
-          // Segments - Bubbly
-          ctx.fillStyle = bodyColor;
-          ctx.beginPath(); ctx.arc(-10, 0, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          ctx.beginPath(); ctx.arc(10, 0, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // Segments - Bubbly & Glossy
+          const drawSegment = (sx: number, sy: number, sr: number) => {
+            const grad = ctx.createRadialGradient(sx - sr*0.3, sy - sr*0.3, 0, sx, sy, sr);
+            grad.addColorStop(0, '#94a3b8');
+            grad.addColorStop(1, bodyColor);
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            // Gloss
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath(); ctx.ellipse(sx - sr*0.4, sy - sr*0.4, sr*0.3, sr*0.15, -Math.PI/4, 0, Math.PI * 2); ctx.fill();
+          };
           
-          drawCartoonEyes(14, 0, 4);
+          drawSegment(-12, 0, 9);
+          drawSegment(0, 0, 7);
+          drawSegment(12, 0, 9);
+          
+          // Antennae
+          ctx.strokeStyle = bodyColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(18, -3); ctx.quadraticCurveTo(25, -15, 30, -10); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(18, 3); ctx.quadraticCurveTo(25, 15, 30, 10); ctx.stroke();
+          
+          drawCartoonEyes(16, 0, 4.5);
         }
 
         // Flashy Effects - Small Sparks
@@ -1114,32 +1319,74 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.strokeRect(e.x - barW/2, e.y - size - 20, barW, barH);
     });
 
-    // Draw Projectiles
+    // Draw Projectiles - Enhanced for high-quality vector anime look
     projectiles.forEach(p => {
       ctx.save();
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = '#fbbf24';
-      ctx.fillStyle = '#fef3c7';
+      const pTime = currentTime / 1000;
+      const pPulse = 1 + Math.sin(pTime * 10) * 0.2;
+      
+      // Energy Trail (Motion Blur)
+      const trailLen = 15;
+      const trailGrad = ctx.createLinearGradient(p.x, p.y, p.x - Math.cos(pTime) * trailLen, p.y - Math.sin(pTime) * trailLen);
+      trailGrad.addColorStop(0, 'rgba(251, 191, 36, 0.6)');
+      trailGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+      
+      ctx.strokeStyle = trailGrad;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.moveTo(p.x, p.y);
+      // We don't have velocity vector here, so we use a simple trail
+      // In a real game, we'd use the direction of travel
+      ctx.lineTo(p.x - 10, p.y); 
+      ctx.stroke();
+
+      // Main Projectile - Glowing Seed/Energy Bolt
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#fbbf24';
+      
+      const pGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 5 * pPulse);
+      pGrad.addColorStop(0, '#fff');
+      pGrad.addColorStop(0.6, '#fbbf24');
+      pGrad.addColorStop(1, '#d97706');
+      
+      ctx.fillStyle = pGrad;
+      ctx.beginPath();
+      // Star/Diamond shape for anime look
+      for(let i=0; i<4; i++) {
+        const sa = (Math.PI / 2) * i;
+        ctx.lineTo(p.x + Math.cos(sa) * 6 * pPulse, p.y + Math.sin(sa) * 6 * pPulse);
+        ctx.lineTo(p.x + Math.cos(sa + Math.PI/4) * 2.5 * pPulse, p.y + Math.sin(sa + Math.PI/4) * 2.5 * pPulse);
+      }
+      ctx.closePath();
       ctx.fill();
       
-      // Trail
-      const trail = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 8);
-      trail.addColorStop(0, 'rgba(251, 191, 36, 0.4)');
-      trail.addColorStop(1, 'rgba(251, 191, 36, 0)');
-      ctx.fillStyle = trail;
-      ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
       ctx.restore();
     });
 
-    // Draw Particles
+    // Draw Particles - Flashy & Anime Style
     particles.forEach(p => {
+      ctx.save();
       ctx.globalAlpha = p.life;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.life * Math.PI);
+      
       ctx.fillStyle = p.color;
+      ctx.shadowBlur = 10 * p.life;
+      ctx.shadowColor = p.color;
+      
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      // Star shape for particles
+      for(let i=0; i<4; i++) {
+        const sa = (Math.PI / 2) * i;
+        ctx.lineTo(Math.cos(sa) * p.size, Math.sin(sa) * p.size);
+        ctx.lineTo(Math.cos(sa + Math.PI/4) * p.size * 0.4, Math.sin(sa + Math.PI/4) * p.size * 0.4);
+      }
+      ctx.closePath();
       ctx.fill();
+      
+      ctx.restore();
     });
     ctx.globalAlpha = 1;
 

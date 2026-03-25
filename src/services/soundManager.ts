@@ -47,73 +47,142 @@ class SoundManager {
     osc.stop(this.ctx.currentTime + duration);
   }
 
-  // Tower Firing Sounds
+  // Tower Firing Sounds - Cheerful & Bright
   playFire(type: string) {
+    this.init();
+    if (!this.ctx || !this.masterGain) return;
+
     switch (type) {
       case 'root':
-        this.playTone(150, 'sine', 0.2, 0.8); // Thump
+        // Crystalline "Ping"
+        this.playTone(1200, 'sine', 0.1, 0.4);
+        setTimeout(() => this.playTone(1500, 'sine', 0.05, 0.3), 50);
         break;
       case 'stem':
-        this.playTone(400, 'square', 0.1, 0.4); // Mechanical click/shot
+        // Bright "Pew"
+        this.playTone(800, 'square', 0.1, 0.3);
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
         break;
       case 'leaf':
-        this.playTone(800, 'sawtooth', 0.05, 0.3); // Sharp slice
+        // High-pitched "Zip"
+        this.playTone(2000, 'sawtooth', 0.05, 0.2);
         break;
       case 'flower':
-        this.playTone(600, 'sine', 0.4, 0.6); // Magic beam
+        // Magical "Twinkle"
+        this.playTone(1000, 'sine', 0.3, 0.5);
+        setTimeout(() => this.playTone(1400, 'sine', 0.2, 0.4), 100);
+        setTimeout(() => this.playTone(1800, 'sine', 0.1, 0.3), 200);
         break;
     }
   }
 
-  // Enemy Destruction
+  // Enemy Destruction - "Pop" and "Sparkle"
   playExplosion() {
     this.init();
     if (!this.ctx || !this.masterGain) return;
 
-    const duration = 0.5;
-    const bufferSize = this.ctx.sampleRate * duration;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1000, this.ctx.currentTime);
-    filter.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + duration);
-
+    // Cute Pop Sound
+    this.playTone(600, 'sine', 0.1, 0.6);
+    const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + duration);
-
-    noise.connect(filter);
-    filter.connect(gain);
+    osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
+    osc.connect(gain);
     gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.1);
 
-    noise.start();
+    // Sparkle layer
+    setTimeout(() => {
+      this.playTone(2500 + Math.random() * 1000, 'sine', 0.05, 0.2);
+    }, 50);
   }
 
-  // Base Hit
+  // Base Hit - Cartoonish "Ouch"
   playBaseHit() {
-    this.playTone(80, 'triangle', 0.6, 1.2); // Heavy impact
-    setTimeout(() => this.playTone(60, 'sine', 0.3, 0.8), 100);
+    // Descending "Boing"
+    this.playTone(400, 'triangle', 0.3, 0.8);
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.3);
   }
 
-  // Game Over
+  // Upgrade Sound - Rising Arpeggio
+  playUpgrade() {
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      setTimeout(() => this.playTone(freq, 'sine', 0.2, 0.4), i * 80);
+    });
+  }
+
+  // Wave Start - Bright Fanfare
+  playWaveStart() {
+    const notes = [392.00, 523.25, 659.25, 783.99]; // G4, C5, E5, G5
+    notes.forEach((freq, i) => {
+      setTimeout(() => this.playTone(freq, 'triangle', 0.3, 0.5), i * 120);
+    });
+  }
+
+  // Victory Sound - Celebratory
+  playVictory() {
+    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+    notes.forEach((freq, i) => {
+      setTimeout(() => this.playTone(freq, 'sine', 0.4, 0.5), i * 100);
+    });
+  }
+
+  // Success Sound - Correct Answer
+  playSuccess() {
+    this.playTone(659.25, 'sine', 0.1, 0.4); // E5
+    setTimeout(() => this.playTone(880.00, 'sine', 0.2, 0.4), 100); // A5
+  }
+
+  // Failure Sound - Incorrect Answer
+  playFailure() {
+    this.playTone(392.00, 'sine', 0.2, 0.4); // G4
+    setTimeout(() => this.playTone(311.13, 'sine', 0.3, 0.4), 150); // Eb4
+  }
+
+  // Click Sound - UI Interaction
+  playClick() {
+    this.playTone(1200, 'sine', 0.05, 0.2);
+  }
+
+  // Placement Sound - Cute "Plop"
+  playPlacement() {
+    this.playTone(400, 'sine', 0.1, 0.4);
+    setTimeout(() => this.playTone(600, 'sine', 0.1, 0.3), 50);
+  }
+
+  // Game Over - Cartoonish Descending
   playGameOver() {
-    this.playTone(400, 'sawtooth', 0.5, 0.8);
-    setTimeout(() => this.playTone(300, 'sawtooth', 0.5, 0.8), 200);
-    setTimeout(() => this.playTone(200, 'sawtooth', 0.8, 1.0), 400);
+    const notes = [440, 349.23, 293.66, 220]; // A4, F4, D4, A3
+    notes.forEach((freq, i) => {
+      setTimeout(() => this.playTone(freq, 'sawtooth', 0.6, 0.6), i * 250);
+    });
   }
 
-  // Enemy Movement (Subtle)
+  // Enemy Movement - Light "Tiptoe"
   playStep() {
-    this.playTone(100 + Math.random() * 50, 'square', 0.02, 0.05);
+    this.playTone(1500 + Math.random() * 500, 'sine', 0.02, 0.03);
   }
 }
 
